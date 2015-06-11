@@ -16,6 +16,7 @@ In your project.clj, you should add below configurations:
 ```
 
 lein-jni help you do below 3 tasks:
+
 1. **javah**: to call javah to create ".h" files for jni java classes
 2. **make**: go into your native code folder and do make
 3. **copy**: copy your so file to project native folder
