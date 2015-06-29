@@ -8,18 +8,24 @@
        :native-target-name "libxxx.so"
        :javah-classes ["a.b.class1" "m.n.class2"]}}
 
+(defn- classpath []
+  (remove clojure.string/blank?  (clojure.string/split (System/getProperty "java.class.path") #":")))
+
 (defn- javah
   [project options]
-  (sh/with-sh-dir (:compile-path project)
-    (doseq [c (:javah-classes options)]
-      (let [root (:root project)
-            native-src (:native-source-path options)
-            args ["javah" "-classpath" "." "-d" native-src c]
-            _ (main/info "Javah for class: " c)
-            _ (main/info "CMD: " (clojure.string/join " " args))
-            r (apply sh/sh args)]
-        (if (not  (zero? (:exit r)))
-          (main/abort "jni javah failed: " (:err r)))))))
+  (doseq [c (:javah-classes options)]
+    (let [root (:root project)
+          compile-path (:compile-path project)
+          native-src (:native-source-path options)
+          args ["javah"
+                "-classpath" (clojure.string/join ":"
+                                                  (cons compile-path (classpath)))
+                "-d" native-src c]
+          _ (main/info "Javah for class: " c)
+          _ (main/info "CMD: " (clojure.string/join " " args))
+          r (apply sh/sh args)]
+      (if (not  (zero? (:exit r)))
+        (main/abort "jni javah failed: " (:err r))))))
 
 (defn- make
   [project options]
